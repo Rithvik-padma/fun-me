@@ -7,18 +7,26 @@ import {PriceConverter} from "./PriceConverter.sol";
 contract Fund{
     using PriceConverter for uint256;
 
-    uint256 public minmUSD = 5;
+    uint256 public constant minmUSD = 5e18;
     address[] public funders; 
     mapping(address => uint256 amountFunded) public addressToAmountFunded;    
-    address public owner;
+    address public immutable owner;
 
     constructor(){
         owner = msg.sender;
     }
 
+    receive() external payable{
+        fund();
+    }
+
+    fallback() external payable{
+        fund();
+    }
+
     function fund() public payable{
         require(msg.value.getConversionRate() >= minmUSD, "Enough ETH was not sent!");
-        funders.push(msg.sender);
+        if(addressToAmountFunded[msg.sender] == 0) funders.push(msg.sender);
         addressToAmountFunded[msg.sender] += msg.value;
     }
 
