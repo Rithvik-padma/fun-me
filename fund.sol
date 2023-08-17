@@ -2,22 +2,18 @@
 
 pragma solidity ^0.8.19;
 
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {PriceConverter} from "./PriceConverter.sol";
 
 contract Fund{
+    using PriceConverter for uint256;
 
-    uint public minmUSD = 5;
+    uint256 public minmUSD = 5;
+    mapping(address => uint256 amountFunded) public addressToAmountFunded;    
+
     function fund() public payable{
-        require(msg.value > minmUSD, "Enough ETH was not sent!");
-
+        require(msg.value.getConversionRate() >= minmUSD, "Enough ETH was not sent!");
+        addressToAmountFunded[msg.sender] += msg.value;
     }
 
-    function getPrice() public view returns(uint256){
-        //Address: 0x5fb1616F78dA7aFC9FF79e0371741a747D2a7F22
-        return AggregatorV3Interface(0x5fb1616F78dA7aFC9FF79e0371741a747D2a7F22).version();
-    }
-
-    function getConversionRate() public{}
-
-    function withdraw() public{}
+    // function withdraw() public{}
 }
